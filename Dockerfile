@@ -38,7 +38,7 @@ COPY branding /branding
 RUN mkdir -p /opt/enshrouded /opt/enshrouded-saves
 
 COPY ./entrypoint.sh /entrypoint.sh
-RUN chmod +x /.sh
+RUN chmod +x /entrypoint.sh
 
 WORKDIR /opt/enshrouded
 
