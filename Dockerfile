@@ -37,12 +37,12 @@ COPY branding /branding
 
 RUN mkdir -p /opt/enshrouded /opt/enshrouded-saves
 
-COPY ./entrypoint.sh /opt/enshrouded/entrypoint.sh
-RUN chmod +x /opt/enshrouded/entrypoint.sh
+COPY ./entrypoint.sh /entrypoint.sh
+RUN chmod +x /.sh
 
 WORKDIR /opt/enshrouded
 
 HEALTHCHECK --start-period=5m \
             CMD pgrep "enshrouded_server" > /dev/null || exit 1
 
-ENTRYPOINT ["/opt/enshrouded/entrypoint.sh"]
+ENTRYPOINT ["entrypoint.sh"]
