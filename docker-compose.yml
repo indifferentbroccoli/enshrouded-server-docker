@@ -13,5 +13,5 @@ services:
     env_file:
       - .env.example
     volumes:
-      - ./game:/opt/enshrouded
-      - ./saves:/opt/enshrouded-saves
+      - ./server-files:/opt/enshrouded
+      - ./server-data:/opt/enshrouded-saves

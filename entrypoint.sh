@@ -59,7 +59,7 @@ trap 'term_handler' SIGTERM SIGINT
 echo "Booting Enshrouded Server..."
 # Launch the Windows executable using Wine and our invisible monitor (xvfb)
 # The '&' puts it in the background so the script can wait for the trap
-su - steam -c "xvfb-run --auto-servernum --server-args='-screen 0 1024x768x24' wine64 /opt/enshrouded/enshrouded_server.exe" &
+su - steam -c "xvfb-run --auto-servernum --server-args='-screen 0 1024x768x24' wine /opt/enshrouded/enshrouded_server.exe" &
 
 # Wait continuously for the process to finish or for a shutdown signal
 WAIT_PID=$!
