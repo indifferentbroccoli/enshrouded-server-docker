@@ -45,4 +45,4 @@ WORKDIR /opt/enshrouded
 HEALTHCHECK --start-period=5m \
             CMD pgrep "enshrouded_server" > /dev/null || exit 1
 
-ENTRYPOINT ["entrypoint.sh"]
+ENTRYPOINT ["/entrypoint.sh"]
