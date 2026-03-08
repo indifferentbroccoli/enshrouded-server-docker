@@ -1,0 +1,17 @@
+---
+services:
+  enshrouded:
+    build:
+      args:
+        WINE_BRANCH: stable
+    image: indifferentbroccoli/enshrouded-server-docker
+    restart: unless-stopped
+    container_name: enshrouded
+    stop_grace_period: 30s
+    ports:
+      - 15637:15637/udp
+    env_file:
+      - .env.example
+    volumes:
+      - ./game:/opt/enshrouded
+      - ./saves:/opt/enshrouded-saves
