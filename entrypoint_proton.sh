@@ -9,6 +9,12 @@ else
     groupmod -o -g "${PGID}" steam
 fi
 
+# Fake a Linux machine ID so Proton doesn't panic
+if [ ! -f /etc/machine-id ]; then
+    echo "Generating missing machine-id for Proton..."
+    cat /proc/sys/kernel/random/uuid > /etc/machine-id
+fi
+
 mkdir -p /opt/enshrouded-saves
 chown -R steam:steam /opt/enshrouded /opt/enshrouded-saves
 
@@ -63,12 +69,27 @@ su - steam -c '
     export STEAM_COMPAT_DATA_PATH="/opt/enshrouded-saves/proton-prefix"
     export STEAM_COMPAT_CLIENT_INSTALL_PATH="/home/steam/steamcmd"
     export STEAM_COMPAT_APP_ID="2278520"
+    export PROTON_LOG=1
+    export WINEDLLOVERRIDES="mscoree,mshtml="
     
-    # Force create the directory as the steam user right before launch
+    # 1. Turn on the invisible monitor permanently in the background
+    export DISPLAY=:99
+    Xvfb :99 -screen 0 1024x768x24 -nolisten tcp &
+    
+    # Give the monitor 2 seconds to warm up
+    sleep 2
+    
     mkdir -p "$STEAM_COMPAT_DATA_PATH"
     
-    # Launch Proton
-    xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" python3 /opt/proton/proton run /opt/enshrouded/enshrouded_server.exe
+    # 2. Launch Proton directly (without xvfb-run wrapping it)
+    python3 /opt/proton/proton run /opt/enshrouded/enshrouded_server.exe
+    
+    # 3. HOLD THE DOOR OPEN (This was the missing piece!)
+    sleep 5
+    echo "Monitoring game process..."
+    while pgrep -f "enshrouded_server.exe" > /dev/null; do
+        sleep 5
+    done
 ' &
 
 # Wait continuously for the process to finish or for a shutdown signal
