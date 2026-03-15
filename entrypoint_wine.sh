@@ -56,18 +56,9 @@ term_handler() {
 trap 'term_handler' SIGTERM SIGINT
 
 echo "Booting Enshrouded Server..."
-# Launch the Windows executable using Wine and our invisible monitor (xvfb)
-# The '&' puts it in the background so the script can wait for the trap
-if [ "$USE_PROTON" = "true" ]; then
-    echo "Engine: Proton GE"
-    # Proton requires a defined fake C: drive path to run
-    export STEAM_COMPAT_DATA_PATH="/opt/enshrouded-saves/proton-prefix"
-    export STEAM_COMPAT_CLIENT_INSTALL_PATH="/home/steam/steamcmd"
-    su - steam -c "xvfb-run --auto-servernum --server-args='-screen 0 1024x768x24' python3 /opt/proton/proton run /opt/enshrouded/enshrouded_server.exe" &
-else
-    echo "Engine: Standard Wine"
-    su - steam -c "xvfb-run --auto-servernum --server-args='-screen 0 1024x768x24' wine /opt/enshrouded/enshrouded_server.exe" &
-fi
+
+echo "Engine: Wine"
+su - steam -c "xvfb-run --auto-servernum --server-args='-screen 0 1024x768x24' wine /opt/enshrouded/enshrouded_server.exe" &
 
 # Wait continuously for the process to finish or for a shutdown signal
 WAIT_PID=$!
