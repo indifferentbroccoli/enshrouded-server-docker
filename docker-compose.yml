@@ -3,6 +3,8 @@ services:
   enshrouded:
     build:
       args:
+        USE_PROTON: true
+        PROTON_VERSION: GE-Proton9-20
         WINE_BRANCH: stable
     image: indifferentbroccoli/enshrouded-server-docker
     restart: unless-stopped
