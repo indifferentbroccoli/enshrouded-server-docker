@@ -20,7 +20,7 @@ else
     BETA_FLAG="-beta $BETA_BRANCH"
 fi
 
-su - steam -c "/home/steam/steamcmd/steamcmd.sh +force_install_dir /opt/enshrouded +login anonymous +app_update 2278520 $BETA_FLAG validate +quit"
+su - steam -c "/home/steam/steamcmd/steamcmd.sh +@sSteamCmdForcePlatformType windows +force_install_dir /opt/enshrouded +login anonymous +app_update 2278520 $BETA_FLAG validate +quit"
 
 echo "Applying environment variables to configuration..."
 cd /opt/enshrouded
@@ -28,6 +28,7 @@ cd /opt/enshrouded
 # If the config file doesn't exist yet (first boot), create a basic valid JSON skeleton
 if [ ! -f "enshrouded_server.json" ]; then
     echo "{}" > enshrouded_server.json
+    chown steam:steam enshrouded_server.json
 fi
 
 # Surgically inject the core variables into the JSON file
@@ -56,13 +57,19 @@ term_handler() {
 trap 'term_handler' SIGTERM SIGINT
 
 echo "Booting Enshrouded Server..."
-
 echo "Engine: Proton GE"
-# Proton requires a defined fake C: drive path to run
-export STEAM_COMPAT_DATA_PATH="/opt/enshrouded-saves/proton-prefix"
-export STEAM_COMPAT_CLIENT_INSTALL_PATH="/home/steam/steamcmd"
-su - steam -c "xvfb-run --auto-servernum --server-args='-screen 0 1024x768x24' python3 /opt/proton/proton run /opt/enshrouded/enshrouded_server.exe" &
 
+su - steam -c '
+    export STEAM_COMPAT_DATA_PATH="/opt/enshrouded-saves/proton-prefix"
+    export STEAM_COMPAT_CLIENT_INSTALL_PATH="/home/steam/steamcmd"
+    export STEAM_COMPAT_APP_ID="2278520"
+    
+    # Force create the directory as the steam user right before launch
+    mkdir -p "$STEAM_COMPAT_DATA_PATH"
+    
+    # Launch Proton
+    xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" python3 /opt/proton/proton run /opt/enshrouded/enshrouded_server.exe
+' &
 
 # Wait continuously for the process to finish or for a shutdown signal
 WAIT_PID=$!
