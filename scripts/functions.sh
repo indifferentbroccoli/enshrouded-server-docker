@@ -50,6 +50,7 @@ install() {
 
   /depotdownloader/DepotDownloader \
     -app 2278520 \
+    -os windows \
     -dir /home/steam/enshrouded \
     -validate
 
