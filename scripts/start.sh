@@ -45,13 +45,14 @@ fi
 
 LogInfo "Server is starting..."
 
+LOG_FILE="$SERVER_FILES/logs/enshrouded_server.log"
+
 if [ "${ENGINE:-wine}" = "proton" ]; then
     LogInfo "Engine: Proton GE"
 
     export STEAM_COMPAT_DATA_PATH="/home/steam/enshrouded/saves/proton-prefix"
     export STEAM_COMPAT_CLIENT_INSTALL_PATH="/home/steam/steamcmd"
     export STEAM_COMPAT_APP_ID="2278520"
-    export PROTON_LOG=1
     export WINEDLLOVERRIDES="mscoree,mshtml="
     export DISPLAY=:99
 
@@ -60,13 +61,7 @@ if [ "${ENGINE:-wine}" = "proton" ]; then
 
     mkdir -p "$STEAM_COMPAT_DATA_PATH"
 
-    python3 /opt/proton/proton run "$SERVER_EXEC"
-
-    LogInfo "Monitoring game process..."
-    sleep 5
-    while pgrep -f "enshrouded_server" > /dev/null; do
-        sleep 5
-    done
+    python3 /opt/proton/proton run "$SERVER_EXEC" &
 else
     LogInfo "Engine: Wine"
 
@@ -75,7 +70,22 @@ else
     export WINEDEBUG="${WINEDEBUG:-fixme-all}"
     export WINEDLLOVERRIDES="mscoree,mshtml="
 
-    xvfb-run --auto-servernum wine "$SERVER_EXEC" >/dev/null 2>&1 &
-    wine_pid=$!
-    wait $wine_pid
+    xvfb-run --auto-servernum wine "$SERVER_EXEC" &
 fi
+
+LogInfo "Waiting for server log..."
+timeout=30
+while [ ! -f "$LOG_FILE" ] && [ "$timeout" -gt 0 ]; do
+    sleep 1
+    timeout=$((timeout - 1))
+done
+
+if [ -f "$LOG_FILE" ]; then
+    tail -n +1 -f "$LOG_FILE" &
+else
+    LogWarn "Log file not found after 30s: $LOG_FILE"
+fi
+
+while pgrep -f "enshrouded_server" > /dev/null; do
+    sleep 5
+done
