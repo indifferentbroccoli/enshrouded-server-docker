@@ -1,73 +1,52 @@
 <!-- markdownlint-disable-next-line -->
 ![marketing_assets_banner](https://github.com/user-attachments/assets/b8b4ae5c-06bb-46a7-8d94-903a04595036)
-[![GitHub License](https://img.shields.io/github/license/indifferentbroccoli/projectzomboid-server-docker?style=for-the-badge&color=6aa84f)](https://github.com/indifferentbroccoli/projectzomboid-server-docker/blob/main/LICENSE)
-[![GitHub Release](https://img.shields.io/github/v/release/indifferentbroccoli/projectzomboid-server-docker?style=for-the-badge&color=6aa84f)](https://github.com/indifferentbroccoli/projectzomboid-server-docker/releases)
-[![GitHub Repo stars](https://img.shields.io/github/stars/indifferentbroccoli/projectzomboid-server-docker?style=for-the-badge&color=6aa84f)](https://github.com/indifferentbroccoli/projectzomboid-server-docker)
+[![GitHub License](https://img.shields.io/github/license/indifferentbroccoli/enshrouded-server-docker?style=for-the-badge&color=6aa84f)](https://github.com/indifferentbroccoli/enshrouded-server-docker/blob/main/LICENSE)
+[![GitHub Release](https://img.shields.io/github/v/release/indifferentbroccoli/enshrouded-server-docker?style=for-the-badge&color=6aa84f)](https://github.com/indifferentbroccoli/enshrouded-server-docker/releases)
+[![GitHub Repo stars](https://img.shields.io/github/stars/indifferentbroccoli/enshrouded-server-docker?style=for-the-badge&color=6aa84f)](https://github.com/indifferentbroccoli/enshrouded-server-docker)
 [![Discord](https://img.shields.io/discord/798321161082896395?style=for-the-badge&label=Discord&labelColor=5865F2&color=6aa84f)](https://discord.gg/indifferentbroccoli)
-[![Docker Pulls](https://img.shields.io/docker/pulls/indifferentbroccoli/projectzomboid-server-docker?style=for-the-badge&color=6aa84f)](https://hub.docker.com/r/indifferentbroccoli/projectzomboid-server-docker)
+[![Docker Pulls](https://img.shields.io/docker/pulls/indifferentbroccoli/enshrouded-server-docker?style=for-the-badge&color=6aa84f)](https://hub.docker.com/r/indifferentbroccoli/enshrouded-server-docker)
 
-Game server hosting
+Game server hosting · Fast RAM · High-speed internet · Eat lag for breakfast
 
-Fast RAM, high-speed internet
+[Try our Enshrouded server hosting free for 2 days!](https://indifferentbroccoli.com/enshrouded-server-hosting)
 
-Eat lag for breakfast
+# Enshrouded Dedicated Server Docker
 
-[Try our Project Zomboid Server hosting free for 2 days!](https://indifferentbroccoli.com/project-zomboid-server-hosting)
-
-# Project Zomboid Server Docker (B42 Unstable Supported)
-
-> [!IMPORTANT]
-> Using Docker Desktop with WSL2 on Windows will result in a very slow download!
+A Docker container for running an Enshrouded dedicated server. The server binary is
+Windows-only and runs via either Wine or Proton GE.
 
 ## Server Requirements
 
-| Resource | Minimum | Recommended                             |
-|----------|---------|-----------------------------------------|
-| CPU      | 4 cores | 4+ cores                                |
-| RAM      | 4GB     | Recommend over 8GB for stable operation |
-| Storage  | 5GB     | 10GB                                    |
-
-> [!NOTE]
-> **Build 42 Support**: To use Project Zomboid's latest Build 42 Unstable branch,
-> set `SERVER_BRANCH=unstable` in your .env file. Leave empty or unset for the
-> stable branch.
+| Resource | Minimum | Recommended | Maximum |
+|----------|---------|-------------|---------|
+| CPU      | 2 cores @ 3.2 GHz | 4 cores @ 3.2 GHz | 4 cores @ 3.2 GHz |
+| RAM      | 8 GB    | 16 GB       | 32 GB   |
+| Storage  | 20 GB SSD | 40 GB SSD | 40 GB SSD |
 
 ## How to use
 
-Copy the .env.example file to a new file called .env file. Then use either `docker compose` or `docker run`
+Copy the `.env.example` file to `.env`, fill in your values, then use either `docker compose` or `docker run`.
 
-> [!IMPORTANT]
-> Please make sure to change the following in the .env:
-> PASSWORD/RCON_PASSWORD/ADMIN_USERNAME/ADMIN_PASSWORD
-
-### Docker compose
-
-Starting the server with Docker Compose:
+### Docker Compose
 
 ```yaml
 services:
-  projectzomboid:
-    image: indifferentbroccoli/projectzomboid-server-docker
+  enshrouded:
+    image: indifferentbroccoli/enshrouded-server-docker
     restart: unless-stopped
-    container_name: projectzomboid
+    container_name: enshrouded
     stop_grace_period: 30s
     ports:
-      - 16261:16261/udp
-      - 16262:16262/udp
-      - 27015:27015/tcp
-    environment:
-      GENERATE_SETTINGS: true
+      - 15636:15636/udp
+      - 15637:15637/udp
     env_file:
       - .env
     volumes:
-      - ./server-files:/project-zomboid
-      - ./server-data:/project-zomboid-config
+      - ./server-files:/home/steam/enshrouded
 ```
 
-Then run:
-
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 ### Docker Run
@@ -75,87 +54,32 @@ docker-compose up -d
 ```bash
 docker run -d \
     --restart unless-stopped \
-    --name projectzomboid \
+    --name enshrouded \
     --stop-timeout 30 \
-    -p 16261:16261/udp \
-    -p 16262:16262/udp \
-    -p 27015:27015/tcp \
-    -e GENERATE_SETTINGS=true \
+    -p 15636:15636/udp \
+    -p 15637:15637/udp \
     --env-file .env \
-    -v ./server-files:/project-zomboid \
-    -v ./server-data:/project-zomboid-config
-    indifferentbroccoli/projectzomboid-server-docker
+    -v ./server-files:/home/steam/enshrouded \
+    indifferentbroccoli/enshrouded-server-docker
 ```
 
 ## Environment Variables
 
-The following environment variables control server behaviour:
+| Variable | Default | Info |
+|----------|---------|------|
+| PUID | 1000 | User ID to run the server process as |
+| PGID | 1000 | Group ID to run the server process as |
+| UPDATE_ON_START | true | Download and validate server files on every startup. Set to `false` to skip. |
+| GENERATE_SETTINGS | true | Set to `false` to skip all config generation and patching. The server will start using whatever is already in `enshrouded_server.json` on disk. |
+| SERVER_NAME | Indifferent Broccoli Enshrouded Server | Display name of the server |
+| SERVER_PORT | 15636 | Game port (UDP) |
+| QUERY_PORT | 15637 | Steam query port (UDP) |
+| MAX_PLAYERS | 12 | Maximum number of simultaneous players |
+| SERVER_PASSWORD |  | Leave empty for a public server |
 
-| Variable                                          | Default                                                                                       | Info                                                                                                                                                |
-|---------------------------------------------------|-----------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------|
-| ADMIN_USERNAME                                    |                                                                                               | Admin username                                                                                                                                      |
-| ADMIN_PASSWORD                                    | CHANGEME                                                                                      | Admin password. Please change this before starting the server.                                                                                      |
-| PASSWORD                                          |                                                                                               | Server password                                                                                                                                     |
-| RCON_PASSWORD                                     |                                                                                               | RCON password                                                                                                                                       |
-| RCON_PORT                                         | 27015                                                                                         | The port for the RCON (Remote Console)                                                                                                              |
-| SERVER_NAME                                       | pzserver                                                                                      | Name of the server/map                                                                                                                              |
-| DEFAULT_PORT                                      | 16261                                                                                         | Default starting port for player data.                                                                                                              |
-| UDP_PORT                                          | 16262                                                                                         | UDP port. Minimum=0 Maximum=65535                                                                                                                   |
-| MEMORY_XMX_GB                                     | 8                                                                                             | Server maximum memory allocation in GB. Sets -Xmx in ProjectZomboid64.json                                                                         |
-| MEMORY_XMS_GB                                     |                                                                                               | Optional: Server initial memory allocation in GB. Sets -Xms in ProjectZomboid64.json. If not specified, only -Xmx is configured                    |
-| UPDATE_ON_START                                   | true                                                                                          | If set to false, skips downloading and validating server files from Steam on startup. The server will always be installed if start-server.sh is missing. |
-| SERVER_BRANCH                                     | ""                                                                                            | Steam branch to install. Set to "unstable" for Build 42 Unstable branch, or leave empty for stable.                                                 |
 
-## Configuration Files
+## About
 
-These files are stored in your `server-data` volume (`./server-data` on the host), under `Server/`. They persist across container restarts and can be edited directly while the server is stopped.
-
-### `<SERVER_NAME>.ini`
-
-**Path:** `server-data/Server/<SERVER_NAME>.ini`
-
-The main server settings file. Controls gameplay options such as PvP, loot respawn, safehouse rules, anti-cheat, player limits, and more. This file is generated by the server on first run. Edit it directly to configure anything not exposed as an environment variable.
-
-### `<SERVER_NAME>_SandboxVars.lua`
-
-**Path:** `server-data/Server/<SERVER_NAME>_SandboxVars.lua`
-
-Controls sandbox/world settings such as zombie population, loot abundance, season, time of day, and other in-world difficulty options. Generated by the server on first run. Changes take effect on server restart.
-
-### `<SERVER_NAME>_spawnregions.lua`
-
-**Path:** `server-data/Server/<SERVER_NAME>_spawnregions.lua`
-
-Defines the spawn regions available to players when they first join. Each region maps to a named area on the map. You can restrict or expand available spawn points by editing this file. A default is created on first run based on the active map.
-
-## Developer information
-
-### Building the image
-
-You can build the image from the Dockerfile using the following command:
-
-```bash
-docker build -t indifferentbroccoli/projectzomboid-server-docker .
-```
-
-### Scripts
-
-#### init.sh
-
-Entrypoint of the container. This script will check if the server is installed and if not, it will install it.
-Also has a term_handler function to catch SIGTERM signals to gracefully stop the server.
-Features basic checks that will confirm if the server can be started.
-
-#### start.sh
-
-Starts the server with the settings from the .env file.
-
-#### install.scmd
-
-Installs the server. This script will download the server files using SteamCMD and extract them to the server directory.
-
-#### funtions.sh
-
-Contains functions that are used in the other scripts.
+This is a Dockerized Enshrouded dedicated server maintained by [indifferent broccoli](https://indifferentbroccoli.com/). We offer [managed Enshrouded server hosting](https://indifferentbroccoli.com/enshrouded-server-hosting) if you'd rather not self-host.
 
 

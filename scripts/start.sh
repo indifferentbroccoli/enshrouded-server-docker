@@ -1,0 +1,81 @@
+#!/bin/bash
+
+# shellcheck source=scripts/functions.sh
+source "/home/steam/server/functions.sh"
+
+SERVER_FILES="/home/steam/enshrouded"
+SERVER_EXEC="$SERVER_FILES/enshrouded_server.exe"
+SERVER_CONFIG="$SERVER_FILES/enshrouded_server.json"
+
+LogAction "Starting Enshrouded Dedicated Server"
+
+if [ ! -f "$SERVER_EXEC" ]; then
+    LogError "Could not find server executable at: $SERVER_EXEC"
+    LogError "Directory contents:"
+    ls -laR "$SERVER_FILES/" 2>/dev/null
+    exit 1
+fi
+
+# If the config file doesn't exist yet (first boot), create a basic valid JSON skeleton
+if [ ! -f "$SERVER_CONFIG" ]; then
+    LogInfo "Creating default server configuration..."
+    echo "{}" > "$SERVER_CONFIG"
+fi
+
+if [ "${GENERATE_SETTINGS:-true}" != "false" ]; then
+    LogAction "Patching server config"
+
+    tr -d '\r' < "$SERVER_CONFIG" | jq \
+        --arg   name     "${SERVER_NAME}" \
+        --arg   password "${SERVER_PASSWORD:-}" \
+        --argjson port   "${SERVER_PORT:-15636}" \
+        --argjson qport  "${QUERY_PORT:-15637}" \
+        --argjson slots  "${MAX_PLAYERS:-12}" \
+        '
+        .name = $name |
+        .password = $password |
+        .gamePort = $port |
+        .queryPort = $qport |
+        .slotCount = $slots |
+        .saveDirectory = "/home/steam/enshrouded/saves"
+        ' > "${SERVER_CONFIG}.tmp" && mv "${SERVER_CONFIG}.tmp" "$SERVER_CONFIG"
+
+    LogSuccess "Server config patched"
+fi
+
+LogInfo "Server is starting..."
+
+if [ "${ENGINE:-wine}" = "proton" ]; then
+    LogInfo "Engine: Proton GE"
+
+    export STEAM_COMPAT_DATA_PATH="/home/steam/enshrouded/saves/proton-prefix"
+    export STEAM_COMPAT_CLIENT_INSTALL_PATH="/home/steam/steamcmd"
+    export STEAM_COMPAT_APP_ID="2278520"
+    export PROTON_LOG=1
+    export WINEDLLOVERRIDES="mscoree,mshtml="
+    export DISPLAY=:99
+
+    Xvfb :99 -screen 0 1024x768x24 -nolisten tcp &
+    sleep 2
+
+    mkdir -p "$STEAM_COMPAT_DATA_PATH"
+
+    python3 /opt/proton/proton run "$SERVER_EXEC"
+
+    LogInfo "Monitoring game process..."
+    sleep 5
+    while pgrep -f "enshrouded_server" > /dev/null; do
+        sleep 5
+    done
+else
+    LogInfo "Engine: Wine"
+
+    export WINEPREFIX="${WINEPREFIX:-$HOME/.wine}"
+    export WINEARCH="${WINEARCH:-win64}"
+    export WINEDEBUG="${WINEDEBUG:-fixme-all}"
+    export WINEDLLOVERRIDES="mscoree,mshtml="
+
+    xvfb-run --auto-servernum wine "$SERVER_EXEC" >/dev/null 2>&1 &
+    wine_pid=$!
+    wait $wine_pid
+fi

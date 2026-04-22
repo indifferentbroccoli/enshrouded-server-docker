@@ -2,13 +2,31 @@
 FROM cm2network/steamcmd:root
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    gettext-base \
+    curl \
+    unzip \
     procps \
     jq \
     xvfb \
     xauth \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+# Install .NET 8 runtime (required for DepotDownloader)
+RUN curl -sL https://dot.net/v1/dotnet-install.sh -o /tmp/dotnet-install.sh && \
+    chmod +x /tmp/dotnet-install.sh && \
+    /tmp/dotnet-install.sh --channel 8.0 --runtime dotnet --install-dir /usr/share/dotnet && \
+    ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet && \
+    rm /tmp/dotnet-install.sh
+
+# Download DepotDownloader
+ARG DEPOT_DOWNLOADER_VERSION=3.4.0
+RUN curl -sL \
+    "https://github.com/SteamRE/DepotDownloader/releases/download/DepotDownloader_${DEPOT_DOWNLOADER_VERSION}/DepotDownloader-linux-x64.zip" \
+    -o /tmp/dd.zip && \
+    mkdir -p /depotdownloader && \
+    unzip /tmp/dd.zip -d /depotdownloader && \
+    chmod +x /depotdownloader/DepotDownloader && \
+    rm /tmp/dd.zip
 
 # Install wine because the server is a windows executable and we want to run it on linux
 ARG PROTON_VERSION=GE-Proton10-32
@@ -24,22 +42,24 @@ LABEL maintainer="support@indifferentbroccoli.com" \
 
 ENV PUID=1000 \
     PGID=1000 \
+    ENGINE=proton \
+    UPDATE_ON_START=true \
+    GENERATE_SETTINGS=true \
     SERVER_PORT=15636 \
     QUERY_PORT=15637 \
     SERVER_NAME="Indifferent Broccoli Enshrouded Server" \
-    SLOT_COUNT=12 \
-    BETA_BRANCH=""
+    MAX_PLAYERS=12
 
 COPY branding /branding
 
-RUN mkdir -p /opt/enshrouded /opt/enshrouded-saves
+RUN mkdir -p /home/steam/enshrouded
 
-COPY ./entrypoint_proton.sh /entrypoint_proton.sh
-RUN chmod +x /entrypoint_proton.sh
+COPY ./scripts /home/steam/server/
+RUN chmod +x /home/steam/server/*.sh
 
-WORKDIR /opt/enshrouded
+WORKDIR /home/steam/server
 
 HEALTHCHECK --start-period=5m \
-    CMD pgrep "enshrouded_server" > /dev/null || exit 1
+    CMD pgrep -f "enshrouded_server" > /dev/null || exit 1
 
-ENTRYPOINT ["/entrypoint_proton.sh"]
+ENTRYPOINT ["/home/steam/server/init.sh"]

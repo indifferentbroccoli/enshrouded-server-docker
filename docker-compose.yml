@@ -1,12 +1,6 @@
 ---
 services:
   enshrouded:
-    build:
-      context: .
-      dockerfile: Dockerfile.proton
-      args:
-        PROTON_VERSION: GE-Proton10-32    # Use only if dockerfile is set to Dockerfile.proton
-        #WINE_BRANCH: stable              # Use only if dockerfile is set to Dockerfile.wine
     image: indifferentbroccoli/enshrouded-server-docker
     restart: unless-stopped
     container_name: enshrouded
@@ -15,7 +9,6 @@ services:
       - 15636:15636/udp
       - 15637:15637/udp
     env_file:
-      - .env.example
+      - .env
     volumes:
-      - ./server-files:/opt/enshrouded
-      - ./server-data:/opt/enshrouded-saves
+      - ./server-files:/home/steam/enshrouded
