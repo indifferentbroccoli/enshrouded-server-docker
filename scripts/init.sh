@@ -19,6 +19,9 @@ if [ "${ENGINE:-wine}" = "proton" ] && [ ! -f /etc/machine-id ]; then
     cat /proc/sys/kernel/random/uuid > /etc/machine-id
 fi
 
+mkdir -p /tmp/.X11-unix
+chmod 1777 /tmp/.X11-unix
+
 mkdir -p /home/steam/enshrouded
 chown -R steam:steam /home/steam/
 
