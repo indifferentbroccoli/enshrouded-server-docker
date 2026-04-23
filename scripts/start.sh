@@ -16,13 +16,13 @@ if [ ! -f "$SERVER_EXEC" ]; then
     exit 1
 fi
 
-# If the config file doesn't exist yet (first boot)
-if [ ! -f "$SERVER_CONFIG" ]; then
-    LogInfo "Creating default server configuration..."
-    echo '{"userGroups":[{"name":"Default","password":"","canKickBan":false,"canAccessInventories":true,"canEditWorld":true,"canEditBase":true,"canExtendBase":true,"reservedSlots":0}]}' > "$SERVER_CONFIG"
-fi
-
 if [ "${GENERATE_SETTINGS:-true}" != "false" ]; then
+    # If the config file doesn't exist yet (first boot)
+    if [ ! -f "$SERVER_CONFIG" ]; then
+        LogInfo "Creating default server configuration..."
+        echo '{"userGroups":[{"name":"Default","password":"","canKickBan":false,"canAccessInventories":true,"canEditWorld":true,"canEditBase":true,"canExtendBase":true,"reservedSlots":0}]}' > "$SERVER_CONFIG"
+    fi
+
     LogAction "Patching server config"
 
     tr -d '\r' < "$SERVER_CONFIG" | jq \
@@ -60,7 +60,7 @@ if [ "${ENGINE:-wine}" = "proton" ]; then
 
     mkdir -p "$STEAM_COMPAT_DATA_PATH"
 
-    python3 /opt/proton/proton run "$SERVER_EXEC" 2>/dev/null &
+    python3 /opt/proton/proton run "$SERVER_EXEC" >/dev/null 2>&1 &
 else
     LogInfo "Engine: Wine"
 
