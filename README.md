@@ -37,12 +37,11 @@ services:
     container_name: enshrouded
     stop_grace_period: 30s
     ports:
-      - 15636:15636/udp
       - 15637:15637/udp
     env_file:
       - .env
     volumes:
-      - ./server-files:/home/steam/enshrouded
+      - ./server-data:/home/steam/enshrouded
 ```
 
 ```bash
@@ -56,10 +55,9 @@ docker run -d \
     --restart unless-stopped \
     --name enshrouded \
     --stop-timeout 30 \
-    -p 15636:15636/udp \
     -p 15637:15637/udp \
     --env-file .env \
-    -v ./server-files:/home/steam/enshrouded \
+    -v ./server-data:/home/steam/enshrouded \
     indifferentbroccoli/enshrouded-server-docker
 ```
 
@@ -72,8 +70,7 @@ docker run -d \
 | UPDATE_ON_START | true | Download and validate server files on every startup. Set to `false` to skip. |
 | GENERATE_SETTINGS | true | Set to `false` to skip all config generation and patching. The server will start using whatever is already in `enshrouded_server.json` on disk. |
 | SERVER_NAME | Indifferent Broccoli Enshrouded Server | Display name of the server |
-| SERVER_PORT | 15636 | Game port (UDP) |
-| QUERY_PORT | 15637 | Steam query port (UDP) |
+| QUERY_PORT | 15637 | Query port (UDP) |
 | MAX_PLAYERS | 12 | Maximum number of simultaneous players |
 | SERVER_PASSWORD |  | Leave empty for a public server |
 

@@ -28,13 +28,11 @@ if [ "${GENERATE_SETTINGS:-true}" != "false" ]; then
     tr -d '\r' < "$SERVER_CONFIG" | jq \
         --arg   name     "${SERVER_NAME}" \
         --arg   password "${SERVER_PASSWORD:-}" \
-        --argjson port   "${SERVER_PORT:-15636}" \
         --argjson qport  "${QUERY_PORT:-15637}" \
         --argjson slots  "${MAX_PLAYERS:-12}" \
         '
         .name = $name |
-        .password = $password |
-        .gamePort = $port |
+        (if $password != "" then .password = $password else del(.password) end) |
         .queryPort = $qport |
         .slotCount = $slots |
         .saveDirectory = "/home/steam/enshrouded/saves"
@@ -61,7 +59,7 @@ if [ "${ENGINE:-wine}" = "proton" ]; then
 
     mkdir -p "$STEAM_COMPAT_DATA_PATH"
 
-    python3 /opt/proton/proton run "$SERVER_EXEC" &
+    python3 /opt/proton/proton run "$SERVER_EXEC" 2>/dev/null &
 else
     LogInfo "Engine: Wine"
 

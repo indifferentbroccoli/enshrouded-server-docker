@@ -50,7 +50,6 @@ ENV PUID=1000 \
     ENGINE=wine \
     UPDATE_ON_START=true \
     GENERATE_SETTINGS=true \
-    SERVER_PORT=15636 \
     QUERY_PORT=15637 \
     SERVER_NAME="Indifferent Broccoli Enshrouded Server" \
     MAX_PLAYERS=12

@@ -6,7 +6,6 @@ services:
     container_name: enshrouded
     stop_grace_period: 30s
     ports:
-      - 15636:15636/udp
       - 15637:15637/udp
     env_file:
       - .env

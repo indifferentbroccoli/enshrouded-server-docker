@@ -51,7 +51,6 @@ term_handler() {
 trap 'term_handler' SIGTERM
 
 export SERVER_NAME="${SERVER_NAME:-Indifferent Broccoli Enshrouded Server}"
-export SERVER_PORT="${SERVER_PORT:-15636}"
 export QUERY_PORT="${QUERY_PORT:-15637}"
 export MAX_PLAYERS="${MAX_PLAYERS:-12}"
 export SERVER_PASSWORD="${SERVER_PASSWORD:-}"
@@ -59,7 +58,7 @@ export UPDATE_ON_START="${UPDATE_ON_START:-true}"
 export GENERATE_SETTINGS="${GENERATE_SETTINGS:-true}"
 
 # Start the server as the steam user, passing through all required environment variables
-su - steam -w "ENGINE,SERVER_NAME,SERVER_PORT,QUERY_PORT,MAX_PLAYERS,SERVER_PASSWORD,GENERATE_SETTINGS" \
+su - steam -w "ENGINE,SERVER_NAME,QUERY_PORT,MAX_PLAYERS,SERVER_PASSWORD,GENERATE_SETTINGS" \
     -c "cd /home/steam/server && ./start.sh" &
 
 killpid="$!"
