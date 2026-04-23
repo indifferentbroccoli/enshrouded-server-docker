@@ -16,10 +16,10 @@ if [ ! -f "$SERVER_EXEC" ]; then
     exit 1
 fi
 
-# If the config file doesn't exist yet (first boot), create a basic valid JSON skeleton
+# If the config file doesn't exist yet (first boot)
 if [ ! -f "$SERVER_CONFIG" ]; then
     LogInfo "Creating default server configuration..."
-    echo "{}" > "$SERVER_CONFIG"
+    echo '{"userGroups":[{"name":"Default","password":"","canKickBan":false,"canAccessInventories":true,"canEditWorld":true,"canEditBase":true,"canExtendBase":true,"reservedSlots":0}]}' > "$SERVER_CONFIG"
 fi
 
 if [ "${GENERATE_SETTINGS:-true}" != "false" ]; then
@@ -35,7 +35,8 @@ if [ "${GENERATE_SETTINGS:-true}" != "false" ]; then
         (if $password != "" then .password = $password else del(.password) end) |
         .queryPort = $qport |
         .slotCount = $slots |
-        .saveDirectory = "/home/steam/enshrouded/saves"
+        .saveDirectory = "/home/steam/enshrouded/saves" |
+        .userGroups[0].password = $password
         ' > "${SERVER_CONFIG}.tmp" && mv "${SERVER_CONFIG}.tmp" "$SERVER_CONFIG"
 
     LogSuccess "Server config patched"
