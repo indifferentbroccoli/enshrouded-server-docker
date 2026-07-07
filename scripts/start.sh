@@ -49,7 +49,7 @@ LOG_FILE="$SERVER_FILES/logs/enshrouded_server.log"
 if [ "${ENGINE:-wine}" = "proton" ]; then
     LogInfo "Engine: Proton GE"
 
-    export STEAM_COMPAT_DATA_PATH="/home/steam/enshrouded/saves/proton-prefix"
+    export STEAM_COMPAT_DATA_PATH="/home/steam/proton-prefix"
     export STEAM_COMPAT_CLIENT_INSTALL_PATH="/home/steam/steamcmd"
     export STEAM_COMPAT_APP_ID="2278520"
     export WINEDLLOVERRIDES="mscoree,mshtml="
