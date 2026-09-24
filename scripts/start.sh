@@ -52,7 +52,7 @@ if [ "${ENGINE:-wine}" = "proton" ]; then
     export STEAM_COMPAT_DATA_PATH="/home/steam/proton-prefix"
     export STEAM_COMPAT_CLIENT_INSTALL_PATH="/home/steam/steamcmd"
     export STEAM_COMPAT_APP_ID="2278520"
-    export WINEDLLOVERRIDES="mscoree,mshtml="
+    export WINEDLLOVERRIDES="mscoree,mshtml=;dbghelp=n,b"
     export DISPLAY=:99
 
     Xvfb :99 -screen 0 1024x768x24 -nolisten tcp &
@@ -67,7 +67,7 @@ else
     export WINEPREFIX="${WINEPREFIX:-$HOME/.wine}"
     export WINEARCH="${WINEARCH:-win64}"
     export WINEDEBUG="${WINEDEBUG:-fixme-all}"
-    export WINEDLLOVERRIDES="mscoree,mshtml="
+    export WINEDLLOVERRIDES="mscoree,mshtml=;dbghelp=n,b"
 
     xvfb-run --auto-servernum wine "$SERVER_EXEC" &
 fi
