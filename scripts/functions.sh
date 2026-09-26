@@ -65,7 +65,7 @@ shutdown_server() {
   LogAction "Attempting graceful server shutdown"
 
   local pid
-  pid=$(pgrep -f "enshrouded_server" | head -1)
+  pid=$(pgrep -f "enshrouded_server.exe" | head -1)
 
   if [ -n "$pid" ]; then
     kill -SIGTERM "$pid"

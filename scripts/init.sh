@@ -39,7 +39,7 @@ chown -R steam:steam /home/steam/enshrouded
 term_handler() {
     if ! shutdown_server; then
         local pid
-        pid=$(pgrep -f "enshrouded_server" | head -1)
+        pid=$(pgrep -f "enshrouded_server.exe" | head -1)
         if [ -n "$pid" ]; then
             kill -SIGTERM "$pid"
         fi

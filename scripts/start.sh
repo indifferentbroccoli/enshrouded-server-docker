@@ -46,6 +46,10 @@ LogInfo "Server is starting..."
 
 LOG_FILE="$SERVER_FILES/logs/enshrouded_server.log"
 
+if [ -f "$LOG_FILE" ]; then
+    mv -f "$LOG_FILE" "${LOG_FILE}.prev"
+fi
+
 if [ "${ENGINE:-wine}" = "proton" ]; then
     LogInfo "Engine: Proton GE"
 
@@ -81,10 +85,15 @@ done
 
 if [ -f "$LOG_FILE" ]; then
     tail -n +1 -f "$LOG_FILE" &
-else
+elif pgrep -f "enshrouded_server.exe" > /dev/null; then
     LogWarn "Log file not found after 30s: $LOG_FILE"
 fi
 
-while pgrep -f "enshrouded_server" > /dev/null; do
+while pgrep -f "enshrouded_server.exe" > /dev/null; do
     sleep 5
 done
+
+LogError "Server process exited"
+if [ ! -f "$LOG_FILE" ]; then
+    LogError "The server exited without writing a log."
+fi
