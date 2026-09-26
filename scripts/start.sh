@@ -61,6 +61,7 @@ if [ "${ENGINE:-wine}" = "proton" ]; then
     export STEAM_COMPAT_DATA_PATH="/home/steam/proton-prefix"
     export STEAM_COMPAT_CLIENT_INSTALL_PATH="/home/steam/steamcmd"
     export STEAM_COMPAT_APP_ID="2278520"
+    export PROTON_USE_XALIA=0
     export WINEDEBUG="${WINEDEBUG:-fixme-all}"
     export WINEDLLOVERRIDES="mscoree,mshtml=;dbghelp=n,b"
     export DISPLAY=:99
@@ -89,14 +90,26 @@ while [ ! -f "$LOG_FILE" ] && [ "$timeout" -gt 0 ] && pgrep -f "enshrouded_serve
     timeout=$((timeout - 1))
 done
 
+tail_pid=""
+following=""
 if [ -f "$LOG_FILE" ]; then
     tail -n +1 -f "$LOG_FILE" &
+    tail_pid="$!"
+    following="$LOG_FILE"
 elif pgrep -f "enshrouded_server.exe" > /dev/null; then
-    LogWarn "Server log not found after 30s, showing ${ENGINE:-wine} output instead:"
+    LogWarn "Server log not found after 30s, showing ${ENGINE:-wine} output until it appears:"
     tail -n +1 -f "$ENGINE_LOG" &
+    tail_pid="$!"
 fi
 
 while pgrep -f "enshrouded_server.exe" > /dev/null; do
+    if [ -f "$LOG_FILE" ] && [ "$following" != "$LOG_FILE" ]; then
+        [ -n "$tail_pid" ] && kill "$tail_pid" 2>/dev/null
+        LogInfo "Server log found, switching to server output"
+        tail -n +1 -f "$LOG_FILE" &
+        tail_pid="$!"
+        following="$LOG_FILE"
+    fi
     sleep 5
 done
 

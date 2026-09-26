@@ -58,7 +58,7 @@ export UPDATE_ON_START="${UPDATE_ON_START:-true}"
 export GENERATE_SETTINGS="${GENERATE_SETTINGS:-true}"
 
 # Start the server as the steam user, passing through all required environment variables
-su - steam -w "ENGINE,SERVER_NAME,QUERY_PORT,MAX_PLAYERS,SERVER_PASSWORD,GENERATE_SETTINGS" \
+su - steam -w "ENGINE,SERVER_NAME,QUERY_PORT,MAX_PLAYERS,SERVER_PASSWORD,GENERATE_SETTINGS,WINEDEBUG" \
     -c "cd /home/steam/server && ./start.sh" &
 
 killpid="$!"
