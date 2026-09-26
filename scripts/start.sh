@@ -55,6 +55,9 @@ for f in "$LOG_FILE" "$ENGINE_LOG"; do
     fi
 done
 
+# Mod loaders need to be here
+cd "$SERVER_FILES" || exit 1
+
 if [ "${ENGINE:-wine}" = "proton" ]; then
     LogInfo "Engine: Proton GE"
 
