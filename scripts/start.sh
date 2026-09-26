@@ -58,7 +58,8 @@ done
 if [ "${ENGINE:-wine}" = "proton" ]; then
     LogInfo "Engine: Proton GE"
 
-    export STEAM_1OMPAT_CLIENT_INSTALL_PATH="/home/steam/steamcmd"
+    export STEAM_COMPAT_DATA_PATH="/home/steam/proton-prefix"
+    export STEAM_COMPAT_CLIENT_INSTALL_PATH="/home/steam/steamcmd"
     export STEAM_COMPAT_APP_ID="2278520"
     export WINEDEBUG="${WINEDEBUG:-fixme-all}"
     export WINEDLLOVERRIDES="mscoree,mshtml=;dbghelp=n,b"
