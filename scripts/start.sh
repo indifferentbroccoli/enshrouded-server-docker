@@ -45,17 +45,22 @@ fi
 LogInfo "Server is starting..."
 
 LOG_FILE="$SERVER_FILES/logs/enshrouded_server.log"
+ENGINE_LOG="$SERVER_FILES/logs/engine.log"
 
-if [ -f "$LOG_FILE" ]; then
-    mv -f "$LOG_FILE" "${LOG_FILE}.prev"
-fi
+mkdir -p "$SERVER_FILES/logs"
+
+for f in "$LOG_FILE" "$ENGINE_LOG"; do
+    if [ -f "$f" ]; then
+        mv -f "$f" "${f}.prev"
+    fi
+done
 
 if [ "${ENGINE:-wine}" = "proton" ]; then
     LogInfo "Engine: Proton GE"
 
-    export STEAM_COMPAT_DATA_PATH="/home/steam/proton-prefix"
-    export STEAM_COMPAT_CLIENT_INSTALL_PATH="/home/steam/steamcmd"
+    export STEAM_1OMPAT_CLIENT_INSTALL_PATH="/home/steam/steamcmd"
     export STEAM_COMPAT_APP_ID="2278520"
+    export WINEDEBUG="${WINEDEBUG:-fixme-all}"
     export WINEDLLOVERRIDES="mscoree,mshtml=;dbghelp=n,b"
     export DISPLAY=:99
 
@@ -64,7 +69,7 @@ if [ "${ENGINE:-wine}" = "proton" ]; then
 
     mkdir -p "$STEAM_COMPAT_DATA_PATH"
 
-    python3 /opt/proton/proton run "$SERVER_EXEC" >/dev/null 2>&1 &
+    python3 /opt/proton/proton run "$SERVER_EXEC" >"$ENGINE_LOG" 2>&1 &
 else
     LogInfo "Engine: Wine"
 
@@ -73,12 +78,12 @@ else
     export WINEDEBUG="${WINEDEBUG:-fixme-all}"
     export WINEDLLOVERRIDES="mscoree,mshtml=;dbghelp=n,b"
 
-    xvfb-run --auto-servernum wine "$SERVER_EXEC" &
+    xvfb-run --auto-servernum wine "$SERVER_EXEC" >"$ENGINE_LOG" 2>&1 &
 fi
 
 LogInfo "Waiting for server log..."
 timeout=30
-while [ ! -f "$LOG_FILE" ] && [ "$timeout" -gt 0 ]; do
+while [ ! -f "$LOG_FILE" ] && [ "$timeout" -gt 0 ] && pgrep -f "enshrouded_server.exe" > /dev/null; do
     sleep 1
     timeout=$((timeout - 1))
 done
@@ -86,7 +91,8 @@ done
 if [ -f "$LOG_FILE" ]; then
     tail -n +1 -f "$LOG_FILE" &
 elif pgrep -f "enshrouded_server.exe" > /dev/null; then
-    LogWarn "Log file not found after 30s: $LOG_FILE"
+    LogWarn "Server log not found after 30s, showing ${ENGINE:-wine} output instead:"
+    tail -n +1 -f "$ENGINE_LOG" &
 fi
 
 while pgrep -f "enshrouded_server.exe" > /dev/null; do
@@ -95,5 +101,6 @@ done
 
 LogError "Server process exited"
 if [ ! -f "$LOG_FILE" ]; then
-    LogError "The server exited without writing a log."
+    LogError "The server exited without writing a log. Last ${ENGINE:-wine} output:"
+    tail -n 50 "$ENGINE_LOG" 2>/dev/null
 fi
