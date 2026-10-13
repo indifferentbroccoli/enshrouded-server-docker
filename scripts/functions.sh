@@ -48,10 +48,25 @@ install() {
   LogAction "Starting server install"
   LogInfo "Installing Enshrouded Dedicated Server"
 
+  local beta_args=()
+  if [ -n "${BETA_BRANCH}" ]; then
+    beta_args+=(-beta "${BETA_BRANCH}")
+    if [ -n "${BETA_PASSWORD}" ]; then
+      beta_args+=(-betapassword "${BETA_PASSWORD}")
+    fi
+  fi
+
+  local login_args=()
+  if [ -n "${STEAM_USERNAME}" ]; then
+    login_args+=(-username "${STEAM_USERNAME}" -password "${STEAM_PASSWORD}")
+  fi
+
   /depotdownloader/DepotDownloader \
     -app 2278520 \
     -os windows \
     -dir /home/steam/enshrouded \
+    "${login_args[@]}" \
+    "${beta_args[@]}" \
     -validate
 
   LogSuccess "Server install complete"

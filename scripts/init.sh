@@ -56,9 +56,10 @@ export MAX_PLAYERS="${MAX_PLAYERS:-12}"
 export SERVER_PASSWORD="${SERVER_PASSWORD:-}"
 export UPDATE_ON_START="${UPDATE_ON_START:-true}"
 export GENERATE_SETTINGS="${GENERATE_SETTINGS:-true}"
+export EXTRA_ARGS="${EXTRA_ARGS:-}"
 
 # Start the server as the steam user, passing through all required environment variables
-su - steam -w "ENGINE,SERVER_NAME,QUERY_PORT,MAX_PLAYERS,SERVER_PASSWORD,GENERATE_SETTINGS,WINEDEBUG" \
+su - steam -w "ENGINE,SERVER_NAME,QUERY_PORT,MAX_PLAYERS,SERVER_PASSWORD,GENERATE_SETTINGS,WINEDEBUG,EXTRA_ARGS" \
     -c "cd /home/steam/server && ./start.sh" &
 
 killpid="$!"

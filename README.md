@@ -73,6 +73,7 @@ docker run -d \
 | QUERY_PORT | 15637 | Query port (UDP) |
 | MAX_PLAYERS | 12 | Maximum number of simultaneous players |
 | SERVER_PASSWORD |  | Leave empty for a public server |
+| EXTRA_ARGS |  | Additional command line arguments passed to the server executable |
 
 
 ## About

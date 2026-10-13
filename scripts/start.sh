@@ -58,6 +58,8 @@ done
 # Mod loaders need to be here
 cd "$SERVER_FILES" || exit 1
 
+read -ra extra_args <<< "${EXTRA_ARGS:-}"
+
 if [ "${ENGINE:-wine}" = "proton" ]; then
     LogInfo "Engine: Proton GE"
 
@@ -74,7 +76,7 @@ if [ "${ENGINE:-wine}" = "proton" ]; then
 
     mkdir -p "$STEAM_COMPAT_DATA_PATH"
 
-    python3 /opt/proton/proton run "$SERVER_EXEC" >"$ENGINE_LOG" 2>&1 &
+    python3 /opt/proton/proton run "$SERVER_EXEC" "${extra_args[@]}" >"$ENGINE_LOG" 2>&1 &
 else
     LogInfo "Engine: Wine"
 
@@ -83,7 +85,7 @@ else
     export WINEDEBUG="${WINEDEBUG:-fixme-all}"
     export WINEDLLOVERRIDES="mscoree,mshtml=;dbghelp=n,b"
 
-    xvfb-run --auto-servernum wine "$SERVER_EXEC" >"$ENGINE_LOG" 2>&1 &
+    xvfb-run --auto-servernum wine "$SERVER_EXEC" "${extra_args[@]}" >"$ENGINE_LOG" 2>&1 &
 fi
 
 LogInfo "Waiting for server log..."
