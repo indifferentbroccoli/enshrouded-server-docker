@@ -46,6 +46,9 @@ Log() {
 
 install() {
   LogAction "Starting server install"
+  LogInfo "Updating steam client"
+  su steam -s /bin/sh -c "/home/steam/steamcmd/steamcmd.sh +quit"
+
   LogInfo "Installing Enshrouded Dedicated Server"
 
   local beta_args=()
