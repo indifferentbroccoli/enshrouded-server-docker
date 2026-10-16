@@ -72,7 +72,7 @@ docker run -d \
 | SERVER_NAME | Indifferent Broccoli Enshrouded Server | Display name of the server |
 | QUERY_PORT | 15637 | Query port (UDP) |
 | MAX_PLAYERS | 12 | Maximum number of simultaneous players |
-| SERVER_PASSWORD |  | Leave empty for a public server |
+| SERVER_PASSWORD |  | Password for the `Default` user group. Leave empty for a public server. Other user groups in `enshrouded_server.json` are left untouched. |
 | EXTRA_ARGS |  | Additional command line arguments passed to the server executable |
 
 

@@ -44,6 +44,25 @@ Log() {
   printf "$color%s$RESET$LINE" "$prefix$message$suffix"
 }
 
+# Only the lowest permission user group may be passwordless
+CheckUserGroupPasswords() {
+  local config="$1"
+  [ -f "$config" ] || return 0
+
+  local open_group
+  open_group=$(tr -d '\r' < "$config" | jq -r '
+    def perms: [.canKickBan, .canAccessInventories, .canEditWorld, .canEditBase, .canExtendBase] | map(select(. == true)) | length;
+    (.userGroups // []) | (map(perms) | min) as $lowest
+    | first(.[] | select((.password // "") == "" and perms > $lowest) | .name) // empty
+    ')
+
+  if [ -n "$open_group" ]; then
+    LogError "User group \"$open_group\" has no password, but only the lowest-permission group can be passwordless."
+    LogError "The server will not start with this config. Set a password on that group in enshrouded_server.json and restart the container."
+    return 1
+  fi
+}
+
 install() {
   LogAction "Starting server install"
   LogInfo "Updating steam client"

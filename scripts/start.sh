@@ -36,11 +36,13 @@ if [ "${GENERATE_SETTINGS:-true}" != "false" ]; then
         .queryPort = $qport |
         .slotCount = $slots |
         .saveDirectory = "/home/steam/enshrouded/saves" |
-        .userGroups[0].password = $password
+        (if .userGroups then .userGroups |= map(if .name == "Default" then .password = $password else . end) else . end)
         ' > "${SERVER_CONFIG}.tmp" && mv "${SERVER_CONFIG}.tmp" "$SERVER_CONFIG"
 
     LogSuccess "Server config patched"
 fi
+
+CheckUserGroupPasswords "$SERVER_CONFIG" || exit 1
 
 LogInfo "Server is starting..."
 
@@ -71,12 +73,15 @@ if [ "${ENGINE:-wine}" = "proton" ]; then
     export WINEDLLOVERRIDES="mscoree,mshtml=;dbghelp=n,b"
     export DISPLAY=:99
 
+    rm -f /tmp/.X99-lock /tmp/.X11-unix/X99
+
     Xvfb :99 -screen 0 1024x768x24 -nolisten tcp &
     sleep 2
 
     mkdir -p "$STEAM_COMPAT_DATA_PATH"
 
     python3 /opt/proton/proton run "$SERVER_EXEC" "${extra_args[@]}" >"$ENGINE_LOG" 2>&1 &
+    server_pid="$!"
 else
     LogInfo "Engine: Wine"
 
@@ -86,11 +91,12 @@ else
     export WINEDLLOVERRIDES="mscoree,mshtml=;dbghelp=n,b"
 
     xvfb-run --auto-servernum wine "$SERVER_EXEC" "${extra_args[@]}" >"$ENGINE_LOG" 2>&1 &
+    server_pid="$!"
 fi
 
 LogInfo "Waiting for server log..."
 timeout=30
-while [ ! -f "$LOG_FILE" ] && [ "$timeout" -gt 0 ] && pgrep -f "enshrouded_server.exe" > /dev/null; do
+while [ ! -f "$LOG_FILE" ] && [ "$timeout" -gt 0 ] && kill -0 "$server_pid" 2>/dev/null; do
     sleep 1
     timeout=$((timeout - 1))
 done
@@ -101,13 +107,13 @@ if [ -f "$LOG_FILE" ]; then
     tail -n +1 -f "$LOG_FILE" &
     tail_pid="$!"
     following="$LOG_FILE"
-elif pgrep -f "enshrouded_server.exe" > /dev/null; then
+elif kill -0 "$server_pid" 2>/dev/null; then
     LogWarn "Server log not found after 30s, showing ${ENGINE:-wine} output until it appears:"
     tail -n +1 -f "$ENGINE_LOG" &
     tail_pid="$!"
 fi
 
-while pgrep -f "enshrouded_server.exe" > /dev/null; do
+while kill -0 "$server_pid" 2>/dev/null; do
     if [ -f "$LOG_FILE" ] && [ "$following" != "$LOG_FILE" ]; then
         [ -n "$tail_pid" ] && kill "$tail_pid" 2>/dev/null
         LogInfo "Server log found, switching to server output"
@@ -118,7 +124,12 @@ while pgrep -f "enshrouded_server.exe" > /dev/null; do
     sleep 5
 done
 
-LogError "Server process exited"
+wait "$server_pid"
+exit_code="$?"
+[ -n "$tail_pid" ] && kill "$tail_pid" 2>/dev/null
+
+LogError "Server process exited with code $exit_code"
+
 if [ ! -f "$LOG_FILE" ]; then
     LogError "The server exited without writing a log. Last ${ENGINE:-wine} output:"
     tail -n 50 "$ENGINE_LOG" 2>/dev/null
